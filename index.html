@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enterprise HR & Attendance Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#eff6ff",
+                100: "#dbeafe",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+                900: "#1e3a8a",
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+    <!-- Toast Notification Container -->
+    <div
+      id="toast-container"
+      class="fixed top-5 right-5 z-50 flex flex-col gap-3"
+    ></div>
+
+    <!-- MAIN CONTAINER -->
+    <div id="app" class="flex h-screen overflow-hidden">
+      <!-- LOGIN SCREEN (Default View) -->
+      <div
+        id="login-screen"
+        class="fixed inset-0 z-40 flex items-center justify-center bg-slate-950 p-4"
+      >
+        <div
+          class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-8 space-y-6"
+        >
+          <div class="text-center space-y-2">
+            <div
+              class="inline-flex p-3 bg-brand-600/10 text-brand-500 rounded-xl mb-2"
+            >
+              <i class="fa-solid fa-user-shield text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">
+              HR Portal Login
+            </h1>
+            <p class="text-sm text-slate-400">
+              Enter your credentials to access the attendance system
+            </p>
+          </div>
+
+          <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
+            <div>
+              <label
+                class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+                >Email Address</label
+              >
+              <div class="relative">
+                <span
+                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"
+                >
+                  <i class="fa-solid fa-envelope"></i>
+                </span>
+                <input
+                  type="email"
+                  id="login-email"
+                  required
+                  placeholder="admin@example.com"
+                  class="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-brand-500 text-slate-200 placeholder-slate-500 text-sm transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+                >Password</label
+              >
+              <div class="relative">
+                <span
+                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"
+                >
+                  <i class="fa-solid fa-lock"></i>
+                </span>
+                <input
+                  type="password"
+                  id="login-password"
+                  required
+                  placeholder="••••••••"
+                  class="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-brand-500 text-slate-200 placeholder-slate-500 text-sm transition"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              id="login-btn"
+              class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-medium rounded-lg shadow-lg shadow-brand-600/20 transition duration-150 flex items-center justify-center gap-2"
+            >
+              <span>Sign In</span>
+              <i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- DASHBOARD SCREEN -->
+      <div
+        id="dashboard-screen"
+        class="hidden flex-1 flex flex-col md:flex-row overflow-hidden"
+      >
+        <!-- Sidebar Navigation -->
+        <aside
+          class="w-full md:w-64 bg-slate-950 border-r border-slate-800 flex flex-col"
+        >
+          <div class="p-6 border-b border-slate-800 flex items-center gap-3">
+            <div class="p-2 bg-brand-600 text-white rounded-lg">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+              <h2 class="font-bold text-white leading-tight">HR Control</h2>
+              <span class="text-xs text-emerald-400 font-medium"
+                >System Online</span
+              >
+            </div>
+          </div>
+
+          <nav class="flex-1 p-4 space-y-1">
+            <a
+              href="#"
+              onclick="switchTab('punch')"
+              id="nav-punch"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-600/10 text-brand-500 font-medium text-sm transition"
+            >
+              <i class="fa-solid fa-fingerprint w-5"></i>
+              <span>Punch Terminal</span>
+            </a>
+            <a
+              href="#"
+              onclick="switchTab('logs')"
+              id="nav-logs"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 font-medium text-sm transition"
+            >
+              <i class="fa-solid fa-list-check w-5"></i>
+              <span>Attendance Logs</span>
+            </a>
+            <a
+              href="#"
+              onclick="switchTab('vault')"
+              id="nav-vault"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 font-medium text-sm transition"
+            >
+              <i class="fa-solid fa-vault w-5"></i>
+              <span>Profile Vault</span>
+            </a>
+          </nav>
+
+          <!-- User Footer -->
+          <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center font-bold text-slate-300"
+                  id="user-avatar"
+                >
+                  U
+                </div>
+                <div class="overflow-hidden">
+                  <p
+                    class="text-sm font-medium text-white truncate"
+                    id="user-name"
+                  >
+                    User Profile
+                  </p>
+                  <p class="text-xs text-slate-400 truncate" id="user-email">
+                    user@domain.com
+                  </p>
+                </div>
+              </div>
+              <button
+                onclick="handleLogout()"
+                class="text-slate-400 hover:text-rose-400 p-2 transition"
+                title="Logout"
+              >
+                <i class="fa-solid fa-right-from-bracket"></i>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto bg-slate-900 p-6 md:p-8">
+          <!-- TAB 1: PUNCH TERMINAL -->
+          <section id="tab-punch" class="space-y-6 max-w-4xl mx-auto">
+            <header
+              class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div>
+                <h1 class="text-2xl font-bold text-white">
+                  Attendance Terminal
+                </h1>
+                <p class="text-slate-400 text-sm">
+                  Record your daily attendance punches in real-time
+                </p>
+              </div>
+              <div
+                id="status-badge"
+                class="px-4 py-2 rounded-full text-sm font-semibold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-2 w-fit"
+              >
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span>Checking status...</span>
+              </div>
+            </header>
+
+            <!-- Quick Action Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Punch In -->
+              <div
+                class="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between space-y-4"
+              >
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span
+                      class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"
+                    >
+                      <i class="fa-solid fa-right-to-bracket text-xl"></i>
+                    </span>
+                    <span class="text-xs text-slate-500 font-mono"
+                      >ENDPOINT: /punch-in</span
+                    >
+                  </div>
+                  <h3 class="text-lg font-bold text-white mt-4">Punch In</h3>
+                  <p class="text-slate-400 text-sm mt-1">
+                    Start your active working session.
+                  </p>
+                </div>
+                <button
+                  onclick="handlePunch('in')"
+                  id="btn-punch-in"
+                  class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2"
+                >
+                  <i class="fa-solid fa-fingerprint"></i>
+                  <span>Execute Punch In</span>
+                </button>
+              </div>
+
+              <!-- Punch Out -->
+              <div
+                class="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between space-y-4"
+              >
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="p-3 bg-rose-500/10 text-rose-400 rounded-xl">
+                      <i class="fa-solid fa-right-from-bracket text-xl"></i>
+                    </span>
+                    <span class="text-xs text-slate-500 font-mono"
+                      >ENDPOINT: /punch-out</span
+                    >
+                  </div>
+                  <h3 class="text-lg font-bold text-white mt-4">Punch Out</h3>
+                  <p class="text-slate-400 text-sm mt-1">
+                    Conclude your working shift.
+                  </p>
+                </div>
+                <button
+                  onclick="handlePunch('out')"
+                  id="btn-punch-out"
+                  class="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white font-medium rounded-xl shadow-lg shadow-rose-600/20 transition flex items-center justify-center gap-2"
+                >
+                  <i class="fa-solid fa-fingerprint"></i>
+                  <span>Execute Punch Out</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB 2: LOGS & EXPORT -->
+          <section id="tab-logs" class="hidden space-y-6 max-w-5xl mx-auto">
+            <header
+              class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div>
+                <h1 class="text-2xl font-bold text-white">
+                  Attendance Audit Logs
+                </h1>
+                <p class="text-slate-400 text-sm">
+                  View attendance records and download reports
+                </p>
+              </div>
+              <button
+                onclick="downloadExcel()"
+                class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-sm font-medium transition flex items-center gap-2"
+              >
+                <i class="fa-solid fa-file-excel text-emerald-500"></i>
+                <span>Export Excel Sheet</span>
+              </button>
+            </header>
+
+            <div
+              class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-xl"
+            >
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead
+                    class="bg-slate-900 border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider"
+                  >
+                    <tr>
+                      <th class="px-6 py-4">Timestamp</th>
+                      <th class="px-6 py-4">Event Type</th>
+                      <th class="px-6 py-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="logs-table-body"
+                    class="divide-y divide-slate-800/50"
+                  >
+                    <tr>
+                      <td
+                        colspan="3"
+                        class="px-6 py-8 text-center text-slate-500"
+                      >
+                        Loading attendance logs...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB 3: VAULT -->
+          <section id="tab-vault" class="hidden space-y-6 max-w-4xl mx-auto">
+            <header>
+              <h1 class="text-2xl font-bold text-white">Security Vault</h1>
+              <p class="text-slate-400 text-sm">
+                Protected system profile metadata
+              </p>
+            </header>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6">
+              <pre
+                id="vault-data"
+                class="bg-slate-900 p-4 rounded-xl text-xs font-mono text-emerald-400 overflow-x-auto"
+              >
+Loading vault metadata...</pre
+              >
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- SCRIPT HANDLERS -->
+    <script>
+      const API_BASE = "http://127.0.0.1:8000";
+      let authToken = localStorage.getItem("access_token") || null;
+
+      // On Load Check Token
+      document.addEventListener("DOMContentLoaded", () => {
+        if (authToken) {
+          showDashboard();
+        } else {
+          showLogin();
+        }
+      });
+
+      function showToast(message, type = "info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        const bgClass =
+          type === "success"
+            ? "bg-emerald-600"
+            : type === "error"
+              ? "bg-rose-600"
+              : "bg-brand-600";
+
+        toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium transition duration-300 flex items-center gap-3`;
+        toast.innerHTML = `<span>${message}</span>`;
+
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.remove();
+        }, 3500);
+      }
+
+      async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById("login-email").value;
+        const password = document.getElementById("login-password").value;
+
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await res.json();
+          if (res.ok && data.access_token) {
+            authToken = data.access_token;
+            localStorage.setItem("access_token", authToken);
+            showToast("Successfully authenticated!", "success");
+            showDashboard();
+          } else {
+            showToast(data.detail || "Invalid login details", "error");
+          }
+        } catch (err) {
+          showToast("Unable to connect to FastAPI backend server.", "error");
+        }
+      }
+
+      function handleLogout() {
+        localStorage.removeItem("access_token");
+        authToken = null;
+        showLogin();
+        showToast("Logged out successfully");
+      }
+
+      function showLogin() {
+        document.getElementById("login-screen").classList.remove("hidden");
+        document.getElementById("dashboard-screen").classList.add("hidden");
+      }
+
+      function showDashboard() {
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("dashboard-screen").classList.remove("hidden");
+        loadUserProfile();
+        loadStatus();
+      }
+
+      function switchTab(tabName) {
+        ["punch", "logs", "vault"].forEach((t) => {
+          document.getElementById(`tab-${t}`).classList.add("hidden");
+          const nav = document.getElementById(`nav-${t}`);
+          nav.classList.remove("bg-brand-600/10", "text-brand-500");
+          nav.classList.add("text-slate-400");
+        });
+
+        document.getElementById(`tab-${tabName}`).classList.remove("hidden");
+        const activeNav = document.getElementById(`nav-${tabName}`);
+        activeNav.classList.add("bg-brand-600/10", "text-brand-500");
+        activeNav.classList.remove("text-slate-400");
+
+        if (tabName === "logs") loadLogs();
+        if (tabName === "vault") loadVault();
+      }
+
+      async function loadUserProfile() {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/me`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById("user-name").innerText = data.email
+              ? data.email.split("@")[0]
+              : "User";
+            document.getElementById("user-email").innerText = data.email || "";
+            document.getElementById("user-avatar").innerText = (data.email ||
+              "U")[0].toUpperCase();
+          }
+        } catch (err) {
+          console.error("Failed to load profile", err);
+        }
+      }
+
+      async function loadStatus() {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/attendance/status`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const badge = document.getElementById("status-badge");
+            if (data.status === "PUNCHED_IN") {
+              badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-400">Punched In</span>`;
+            } else {
+              badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-slate-400">Punched Out</span>`;
+            }
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function handlePunch(type) {
+        try {
+          // Get challenge token
+          const chalRes = await fetch(`${API_BASE}/api/v1/punch/challenge`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          const chalData = await chalRes.json();
+
+          const endpoint =
+            type === "in"
+              ? "/api/v1/attendance/punch-in"
+              : "/api/v1/attendance/punch-out";
+          const res = await fetch(`${API_BASE}${endpoint}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({
+              challenge_token: chalData.token || "valid",
+            }),
+          });
+
+          if (res.ok) {
+            showToast(`Punch ${type.toUpperCase()} recorded!`, "success");
+            loadStatus();
+          } else {
+            const err = await res.json();
+            showToast(err.detail || "Punch failed", "error");
+          }
+        } catch (err) {
+          showToast("Server communication failed", "error");
+        }
+      }
+
+      async function loadLogs() {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/attendance/logs`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          const tbody = document.getElementById("logs-table-body");
+          if (res.ok) {
+            const logs = await res.json();
+            if (!logs.length) {
+              tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-slate-500">No attendance logs available.</td></tr>`;
+              return;
+            }
+            tbody.innerHTML = logs
+              .map(
+                (log) => `
+                        <tr class="hover:bg-slate-900/50">
+                            <td class="px-6 py-4 font-mono text-xs text-slate-400">${new Date(log.created_at || Date.now()).toLocaleString()}</td>
+                            <td class="px-6 py-4 font-medium">${log.event_type || "PUNCH"}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Success</span>
+                            </td>
+                        </tr>
+                    `,
+              )
+              .join("");
+          }
+        } catch (err) {
+          showToast("Failed to fetch logs", "error");
+        }
+      }
+
+      async function loadVault() {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/profile/vault`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById("vault-data").innerText = JSON.stringify(
+              data,
+              null,
+              2,
+            );
+          }
+        } catch (err) {
+          document.getElementById("vault-data").innerText =
+            "Failed to load profile vault.";
+        }
+      }
+
+      function downloadExcel() {
+        window.open(`${API_BASE}/api/v1/export/attendance.xlsx`, "_blank");
+      }
+    </script>
+  </body>
+</html>
